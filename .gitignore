@@ -1,0 +1,50 @@
+# Build
+.gradle/
+build/
+**/build/
+out/
+**/out/
+bin/
+**/bin/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+.vscode/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local tools / JDK (portable installs)
+.tools/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.jks
+
+# Logs
+*.log
+logs/
+
+# Test / coverage
+jacoco/
+**/jacoco/
+test-results/
+**/test-results/
+
+# Package
+*.jar
+*.war
+!gradle/wrapper/gradle-wrapper.jar
