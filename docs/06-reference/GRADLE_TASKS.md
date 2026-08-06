@@ -1,8 +1,27 @@
 # Gradle Tasks
 
-Run from the repository root. Prefer the wrapper (`./gradlew`).
+Prefer the project control plane first:
 
-## Everyday
+```bash
+make help
+./scripts/manage.sh help
+```
+
+See [scripts/README.md](../../scripts/README.md). Direct Gradle remains available via the wrapper (`./gradlew`).
+
+## Everyday (via Make / manage.sh)
+
+| Make | manage.sh | Purpose |
+|------|-----------|---------|
+| `make run` / `run-db` | `run` / `run --with-db` | bootRun (+ optional Postgres) |
+| `make test` | `test` | All module tests |
+| `make format` | `format` | Spotless apply |
+| `make check` | `check` | Spotless check |
+| `make jar` | `jar` | Fat JAR |
+| `make verify` | `verify` | CI-like: check + test + jar |
+| `make clean` | `clean` | Delete build outputs |
+
+## Everyday (raw Gradle)
 
 | Task | Purpose |
 |------|---------|

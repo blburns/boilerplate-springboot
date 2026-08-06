@@ -34,16 +34,19 @@ cd boilerplate-springboot
 ## Option A — App on host, Postgres in Docker (recommended for development)
 
 ```bash
-# 1. Start database only
-docker compose up -d postgres
+# One shot: Postgres + bootRun
+make run-db
 
-# 2. Run the application (JDK 21 helper)
-./scripts/run-local.sh
+# Or step by step
+make db-up
+make run
 
-# or manually:
-./gradlew :app:bootRun --args='--spring.profiles.active=local'
+# Equivalents
+./scripts/manage.sh run --with-db
+./scripts/manage.sh help
 ```
 
+`make` / `manage.sh` prefer JDK 21 for `JAVA_HOME` and wrap Gradle, Compose, format, and test targets.
 Default local DB credentials (see `application-local.yml`):
 
 - Host: `localhost:5432`

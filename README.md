@@ -40,29 +40,37 @@ Integration tests use Testcontainers and are skipped automatically when Docker i
 ## Quick Start
 
 ```bash
-# Start Postgres
-docker compose up -d postgres
-
-# Run the app (local profile) — prefers JDK 21
-./scripts/run-local.sh
-
+make run-db          # start Postgres + bootRun (JDK 21 preferred)
 # or:
-./gradlew :app:bootRun --args='--spring.profiles.active=local'
+./scripts/manage.sh run --with-db
 ```
 
 - Web UI: http://localhost:8080/items
 - Swagger UI: http://localhost:8080/swagger-ui.html
 - Health: http://localhost:8080/actuator/health
 
+Control plane: [`scripts/manage.sh`](scripts/manage.sh) · [`Makefile`](Makefile) · [`scripts/README.md`](scripts/README.md)
+
+```bash
+make help            # list targets
+make test            # unit + integration tests
+make verify          # Spotless + test + bootJar (CI-like)
+make up              # full Compose stack
+make status          # JDK / Docker / health
+```
+
 ### Full stack with Compose
 
 ```bash
-docker compose up --build
+make up
+# or: docker compose up --build
 ```
 
 More detail: [Getting Started](docs/01-getting-started/GETTING_STARTED.md) · [First-run checklist](docs/01-getting-started/FIRST_RUN_CHECKLIST.md)
 
 ## Common Gradle Tasks
+
+Prefer Make/`manage.sh` above. Direct Gradle:
 
 ```bash
 ./gradlew test              # unit + Testcontainers integration tests
