@@ -1,5 +1,35 @@
 # Troubleshooting
 
+## Gradle fails with only a version number (e.g. `What went wrong: 26`)
+
+**Cause:** An older Gradle daemon (pre-9) was running on JDK **26**. Some Gradle versions fail settings evaluation with a cryptic message that is just the major version number. Your debug log showed `javaVersion=26`.
+
+This repo pins the wrapper to **Gradle 9.6+**, which can start on newer JDKs, while the **Java 21 toolchain** still compiles and runs the app.
+
+**Fix (recommended — use JDK 21 for the daemon too):**
+
+```bash
+# macOS — select JDK 21
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+
+# Stop any daemon still bound to JDK 26
+./gradlew --stop
+
+./scripts/run-local.sh
+# or:
+./gradlew :app:bootRun --args='--spring.profiles.active=local'
+```
+
+Confirm:
+
+```bash
+java -version                 # prefer 21.x
+./gradlew --version           # Gradle 9.6.x
+./gradlew -q javaToolchains   # should list a JDK 21 for the toolchain
+```
+
+Avoid `--debug` unless needed; it is noisy and can leak sensitive environment details.
+
 ## App will not start — database connection
 
 **Symptoms:** `Connection refused`, HikariPool timeout, Flyway cannot connect.

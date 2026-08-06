@@ -29,6 +29,8 @@ Run from the repository root. Prefer the wrapper (`./gradlew`).
 - Only `app` applies the Spring Boot plugin for packaging
 - Library modules produce plain JARs consumed by `app`
 
-## Toolchain
+## Toolchain / wrapper
 
-Java **21** via Gradle toolchain. Ensure a JDK 21 is installed or resolvable by the toolchain provisioner.
+- Wrapper: **Gradle 9.6.x** (`./gradlew --version`)
+- Compile/run target: Java **21** via Gradle toolchain (ensure a JDK 21 is installed or Foojay can download one)
+- Prefer `JAVA_HOME` → JDK 21 even if other JDKs are installed

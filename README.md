@@ -28,8 +28,12 @@ app → api, web, infrastructure → domain
 
 ## Prerequisites
 
-- JDK 21+
+- **JDK 21** for the Gradle daemon and app toolchain (do not run Gradle on JDK 25+)
 - Docker (Postgres locally / Testcontainers / Compose)
+
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)   # macOS
+```
 
 Integration tests use Testcontainers and are skipped automatically when Docker is unavailable. CI runners provide Docker, so those tests run on every pull request.
 
@@ -39,7 +43,10 @@ Integration tests use Testcontainers and are skipped automatically when Docker i
 # Start Postgres
 docker compose up -d postgres
 
-# Run the app (local profile)
+# Run the app (local profile) — prefers JDK 21
+./scripts/run-local.sh
+
+# or:
 ./gradlew :app:bootRun --args='--spring.profiles.active=local'
 ```
 

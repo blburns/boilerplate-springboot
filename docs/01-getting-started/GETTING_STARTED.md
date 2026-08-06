@@ -6,11 +6,22 @@ Set up the boilerplate on a developer machine and verify it runs.
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| JDK | 21+ | Temurin recommended |
+| JDK | **21** (toolchain) | App compiles/runs on Java 21. Temurin / JetBrains Runtime 21 recommended for `JAVA_HOME`. Newer daemon JDKs may work with Gradle 9.6+, but prefer 21 (see troubleshooting if you see `What went wrong: 26`). |
 | Docker | Recent | Postgres + Testcontainers + Compose |
 | Git | Any | Clone this repo |
 
 Optional: Docker Compose v2 (`docker compose`).
+
+### Point your shell at JDK 21
+
+macOS (when multiple JDKs are installed):
+
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+java -version   # should show 21.x
+```
+
+This repo also includes `.java-version` (`21`) for jenv / similar version managers.
 
 ## Clone and inspect
 
@@ -26,7 +37,10 @@ cd boilerplate-springboot
 # 1. Start database only
 docker compose up -d postgres
 
-# 2. Run the application
+# 2. Run the application (JDK 21 helper)
+./scripts/run-local.sh
+
+# or manually:
 ./gradlew :app:bootRun --args='--spring.profiles.active=local'
 ```
 
