@@ -25,8 +25,8 @@ It ships a sample **Item** resource end-to-end so you can see how domain ports, 
 1. **Clear module boundaries** — presentation (`api` / `web`) depends on `domain`; persistence and security live in `infrastructure`
 2. **Domain without Spring** — business logic stays unit-testable without a container
 3. **Profile-driven config** — `local` / `test` / `prod` YAMLs plus env vars
-4. **Runnable day one** — Compose Postgres, Gradle bootRun, Swagger, health endpoint
-5. **CI by default** — format check, tests, and fat JAR on every PR
+4. **Runnable day one** — host Postgres + `make run`, Swagger, health endpoint
+5. **CI by default** — format check, tests against a CI Postgres service, and fat JAR on every PR
 
 ## What ships (sample)
 

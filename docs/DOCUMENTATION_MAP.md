@@ -6,7 +6,7 @@ Quick routing by task.
 
 | Task | Go to |
 |------|-------|
-| Install and run locally | [GETTING_STARTED](01-getting-started/GETTING_STARTED.md) · `make run-db` / [scripts/README](../scripts/README.md) |
+| Install and run locally | [GETTING_STARTED](01-getting-started/GETTING_STARTED.md) · `make db-init && make run` / [scripts/README](../scripts/README.md) |
 | Confirm the app is healthy after first start | [FIRST_RUN_CHECKLIST](01-getting-started/FIRST_RUN_CHECKLIST.md) |
 | Create an item in the browser | [USING_THE_WEB_UI](02-user-guide/USING_THE_WEB_UI.md) |
 | Call the API with curl / Swagger | [USING_THE_API](02-user-guide/USING_THE_API.md) |

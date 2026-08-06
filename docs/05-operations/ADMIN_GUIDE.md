@@ -7,19 +7,19 @@ Day-2 operations for administrators running this boilerplate (or products derive
 | Area | Doc |
 |------|-----|
 | Profiles, env vars, secrets | [CONFIGURATION](CONFIGURATION.md) |
-| Deploy JAR / Compose / GHCR | [DEPLOYMENT](DEPLOYMENT.md) |
+| Deploy JAR / optional image | [DEPLOYMENT](DEPLOYMENT.md) |
 | Health and metrics | [MONITORING](MONITORING.md) |
 | Incidents and common errors | [TROUBLESHOOTING](TROUBLESHOOTING.md) |
 
 ## Default topology
 
 ```text
-Client ──► App (:8080) ──► PostgreSQL (:5432)
+Client ──► App (:8080) ──► PostgreSQL (host or managed)
               │
               └── Actuator (/actuator/*)
 ```
 
-Compose service names: `app`, `postgres` (see root `docker-compose.yml`).
+Default local DB: `boilerplate` @ `localhost:5432` (see `make db-init`).
 
 ## Security baseline (must harden for production)
 
@@ -42,7 +42,7 @@ Before public exposure:
 | Concern | Owner |
 |---------|-------|
 | Schema | Flyway migrations (app boot) |
-| Backups | Admin — dump Postgres volume / managed DB |
+| Backups | Admin — `pg_dump` / managed DB snapshots |
 | App config | Env vars + `application-*.yml` |
 
 ## Routine checks
@@ -51,7 +51,7 @@ Daily / after deploy:
 
 ```bash
 curl -sf http://localhost:8080/actuator/health
-docker compose ps   # if using Compose
+make db-check
 ```
 
 Confirm `"status":"UP"`. Investigate DB connectivity if status is `DOWN`.

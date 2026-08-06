@@ -1,29 +1,26 @@
 # Getting Started
 
-Set up the boilerplate on a developer machine and verify it runs.
+Set up the boilerplate on a developer machine against an **already installed Postgres**.
 
 ## Prerequisites
 
 | Tool | Version | Notes |
 |------|---------|-------|
-| JDK | **21** (toolchain) | App compiles/runs on Java 21. Temurin / JetBrains Runtime 21 recommended for `JAVA_HOME`. Newer daemon JDKs may work with Gradle 9.6+, but prefer 21 (see troubleshooting if you see `What went wrong: 26`). |
-| Docker | Recent | Postgres + Testcontainers + Compose |
+| JDK | **21** (toolchain) | Prefer Temurin / JetBrains Runtime 21 for `JAVA_HOME` |
+| PostgreSQL | 14+ (16 recommended) | Host service listening on `localhost:5432` (or set `DB_*`) |
+| `psql` | Matches server | Used by `db-init` / `db-check` |
 | Git | Any | Clone this repo |
 
-Optional: Docker Compose v2 (`docker compose`).
+Docker is **not** required for development. Compose remains an [optional appendix](#optional-docker-compose).
 
 ### Point your shell at JDK 21
 
-macOS (when multiple JDKs are installed):
-
 ```bash
-export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)   # macOS
 java -version   # should show 21.x
 ```
 
-This repo also includes `.java-version` (`21`) for jenv / similar version managers.
-
-## Clone and inspect
+## Clone
 
 ```bash
 git clone <your-remote-url> boilerplate-springboot
@@ -31,57 +28,66 @@ cd boilerplate-springboot
 ./gradlew --version
 ```
 
-## Option A — App on host, Postgres in Docker (recommended for development)
+## Configure Postgres (once)
+
+Defaults (`application-local.yml` / `scripts/manage.sh`):
+
+| Setting | Default |
+|---------|---------|
+| Host / port | `localhost:5432` |
+| Database | `boilerplate` |
+| User / password | `boilerplate` / `boilerplate` |
+
+Create role + database (needs a Postgres superuser / peer login):
 
 ```bash
-# One shot: Postgres + bootRun
-make run-db
+make db-init
+# or: PGUSER=postgres ./scripts/manage.sh db-init
+make db-check
+```
 
-# Or step by step
-make db-up
+Equivalent SQL: [`scripts/sql/init_local_db.sql`](../../scripts/sql/init_local_db.sql).
+
+Copy [`.env.example`](../../.env.example) if you want a local env file for your shell/tooling.
+
+## Run the app
+
+```bash
 make run
-
-# Equivalents
-./scripts/manage.sh run --with-db
-./scripts/manage.sh help
+# or: ./scripts/manage.sh run
 ```
 
-`make` / `manage.sh` prefer JDK 21 for `JAVA_HOME` and wrap Gradle, Compose, format, and test targets.
-Default local DB credentials (see `application-local.yml`):
-
-- Host: `localhost:5432`
-- Database / user / password: `boilerplate` / `boilerplate` / `boilerplate`
-
-## Option B — Full stack with Compose
-
-Builds the multi-stage image and starts app + Postgres:
-
-```bash
-docker compose up --build
-```
-
-App listens on **http://localhost:8080**.
-
-## Useful URLs
+Useful URLs:
 
 | URL | What it is |
 |-----|------------|
 | http://localhost:8080/ | Redirects to Items UI |
 | http://localhost:8080/items | Sample Thymeleaf UI |
 | http://localhost:8080/swagger-ui.html | OpenAPI / Swagger UI |
-| http://localhost:8080/v3/api-docs | OpenAPI JSON |
 | http://localhost:8080/actuator/health | Health endpoint |
 
-## Build without running
+## Build / test
 
 ```bash
-./gradlew spotlessApply test :app:bootJar
+make format
+make test          # integration tests talk to the same Postgres
+make verify        # Spotless + test + bootJar
+make jar
 ```
 
-Fat JAR: `app/build/libs/boilerplate-springboot-0.1.0-SNAPSHOT.jar`
+## Optional: Docker Compose
+
+Only if you explicitly want containers instead of a host Postgres:
+
+```bash
+make compose-up
+# or: docker compose up --build
+```
+
+See root `docker-compose.yml` (marked optional).
 
 ## Next
 
 1. [FIRST_RUN_CHECKLIST](FIRST_RUN_CHECKLIST.md)
-2. [User Guide](../02-user-guide/README.md) if you want to click through Items
-3. [Admin Guide](../05-operations/ADMIN_GUIDE.md) for deployment profiles
+2. [User Guide](../02-user-guide/README.md)
+3. [Admin Guide](../05-operations/ADMIN_GUIDE.md)

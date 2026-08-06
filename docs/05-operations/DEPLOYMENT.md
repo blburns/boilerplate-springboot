@@ -20,29 +20,15 @@ java -jar app/build/libs/boilerplate-springboot-0.1.0-SNAPSHOT.jar
 
 Ensure Postgres is reachable and empty/migrations can apply **before** traffic is routed.
 
-## Docker Compose (self-hosted)
+## Optional: Docker Compose
+
+Not required. Prefer a host or managed Postgres + fat JAR. If you want containers:
 
 ```bash
-docker compose up --build -d
+make compose-up
 ```
 
-Services:
-
-| Service | Image / build | Port |
-|---------|---------------|------|
-| `postgres` | `postgres:16-alpine` | `5432` |
-| `app` | `docker/Dockerfile` multi-stage | `8080` |
-
-Data volume: `pgdata`.
-
-Stop:
-
-```bash
-docker compose down          # keep volume
-docker compose down -v       # destroy DB data
-```
-
-## Container image (GHCR)
+## Optional: Container image (GHCR)
 
 Workflow [`.github/workflows/docker.yml`](../../.github/workflows/docker.yml):
 
@@ -67,7 +53,7 @@ docker run --rm -p 8080:8080 \
 [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) on `main` / PRs:
 
 1. Spotless
-2. Tests (Testcontainers)
+2. Tests (CI Postgres service)
 3. `bootJar`
 
 Do not promote a failed CI build.

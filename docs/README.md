@@ -60,7 +60,7 @@ Full map: [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md)
 | [README](04-development/README.md) | Development index |
 | [ADDING_A_FEATURE](04-development/ADDING_A_FEATURE.md) | Step-by-step feature recipe |
 | [API_REFERENCE](04-development/API_REFERENCE.md) | Items REST contract and errors |
-| [TESTING](04-development/TESTING.md) | Unit, integration, Testcontainers |
+| [TESTING](04-development/TESTING.md) | Unit + host-Postgres integration tests |
 | [CODING_CONVENTIONS](04-development/CODING_CONVENTIONS.md) | Packages, formatting, security notes |
 
 ---

@@ -1,11 +1,15 @@
 # First-Run Checklist
 
-Use this after your first `bootRun` or `docker compose up`.
+Use this after `make db-init` and `make run`.
+
+## Postgres
+
+- [ ] `make db-check` succeeds
+- [ ] `psql -h localhost -U boilerplate -d boilerplate -c '\dt'` works after first app boot (Flyway creates `items`)
 
 ## Health
 
 - [ ] `GET http://localhost:8080/actuator/health` returns `"status":"UP"`
-- [ ] Postgres container is healthy: `docker compose ps`
 
 ## Web UI
 
@@ -21,19 +25,17 @@ Use this after your first `bootRun` or `docker compose up`.
 - [ ] Create `{ "name": "Checklist item", "description": "ok" }` → **201**
 - [ ] **GET /api/v1/items** lists the new record
 
-## Database
-
-- [ ] Flyway applied `V1__init_items.sql` (no migration errors in logs)
-- [ ] Optional: `\dt` in `psql` shows `items` and `flyway_schema_history`
+## Database (after Flyway)
 
 ```bash
-docker compose exec postgres \
-  psql -U boilerplate -d boilerplate -c '\dt'
+psql -h localhost -U boilerplate -d boilerplate -c '\dt'
 ```
 
-## Tests (developer machines with Docker)
+You should see `items` and `flyway_schema_history`.
 
-- [ ] `./gradlew test` is green (integration tests need Docker)
+## Tests
+
+- [ ] `make test` is green against the same local Postgres
 
 ## If something fails
 

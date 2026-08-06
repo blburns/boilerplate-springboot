@@ -13,7 +13,8 @@ See [scripts/README.md](../../scripts/README.md). Direct Gradle remains availabl
 
 | Make | manage.sh | Purpose |
 |------|-----------|---------|
-| `make run` / `run-db` | `run` / `run --with-db` | bootRun (+ optional Postgres) |
+| `make run` | `run` | bootRun against existing Postgres |
+| `make db-init` / `db-check` | `db-init` / `db-check` | Create / verify local database |
 | `make test` | `test` | All module tests |
 | `make format` | `format` | Spotless apply |
 | `make check` | `check` | Spotless check |

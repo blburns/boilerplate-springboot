@@ -55,7 +55,7 @@ Update `SecurityConfig` if the new paths should be public or protected. Do not l
 
 ## 6. Tests in `app`
 
-Add `@SpringBootTest` + Testcontainers coverage for the happy path (create/get/delete) next to `ItemApiIntegrationTest`.
+Add `@SpringBootTest` coverage for the happy path (create/get/delete) next to `ItemApiIntegrationTest`, using the host Postgres `test` profile (no Testcontainers).
 
 ## 7. Docs
 

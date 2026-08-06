@@ -5,25 +5,28 @@
 | Level | Where | Tooling |
 |-------|-------|---------|
 | Unit | `domain` | JUnit 5 + AssertJ, in-memory fakes |
-| Integration | `app` | `@SpringBootTest`, MockMvc, Testcontainers Postgres |
+| Integration | `app` | `@SpringBootTest`, MockMvc, **host Postgres** via `test` profile |
+
+No Testcontainers / Docker engine is required.
 
 ## Run tests
 
 ```bash
-./gradlew test
+make db-check   # Postgres must already exist
+make test
 ```
 
-Integration tests require a working Docker daemon. Without Docker they are **skipped** (`@Testcontainers(disabledWithoutDocker = true)` + assumptions) so local machines without Docker can still run domain unit tests.
+Integration tests read `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASSWORD` (defaults match `application-local.yml`). If Postgres is unreachable they are **skipped** with a message pointing at `manage.sh db-init`.
 
-CI (`ubuntu-latest`) has Docker, so integration tests run on every PR.
+CI uses a GitHub Actions **Postgres service** (not Docker Compose in the repo workflow).
 
 ## Writing a domain unit test
 
 Mirror `ItemServiceTest`:
 
-1. Fake `ItemRepository` implementation in the test class
+1. Fake `ItemRepository` in the test class
 2. Construct `ItemService` with the fake
-3. Assert behavior (create/update/delete/not-found)
+3. Assert behavior
 
 No Spring context — keep these fast.
 
@@ -35,31 +38,23 @@ Pattern from `ItemApiIntegrationTest`:
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Testcontainers(disabledWithoutDocker = true)
 class WidgetApiIntegrationTest {
 
-  @Container
-  @ServiceConnection
-  static PostgreSQLContainer<?> postgres =
-      new PostgreSQLContainer<>("postgres:16-alpine");
+  @BeforeAll
+  static void requirePostgres() { /* DriverManager ping or assumeTrue */ }
 
   @Autowired MockMvc mockMvc;
-  // exercise HTTP against real Flyway schema
 }
 ```
 
-`@ServiceConnection` wires datasource properties automatically.
-
-Use `@WithMockUser` if Spring Security filters would otherwise challenge a path.
+Use `@WithMockUser` when Security would otherwise challenge a path.
 
 ## Formatting gate
 
 ```bash
-./gradlew spotlessCheck   # CI
-./gradlew spotlessApply   # fix locally
+make check            # CI
+make format           # fix locally
 ```
-
-Google Java Format + ktlint for Gradle Kotlin DSL.
 
 ## Manual smoke
 

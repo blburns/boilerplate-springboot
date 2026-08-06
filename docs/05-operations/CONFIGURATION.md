@@ -69,9 +69,9 @@ In `prod`, `management.endpoint.health.show-details` is `never` (from `applicati
 | `local` | SQL debug, app DEBUG |
 | `test` / `prod` | Quieter (WARN root, INFO app) |
 
-## Compose example
+## Optional Compose example
 
-`docker-compose.yml` sets:
+Only if you use the optional `docker-compose.yml` appendix:
 
 ```yaml
 SPRING_PROFILES_ACTIVE: local

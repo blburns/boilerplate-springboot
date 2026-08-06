@@ -28,21 +28,22 @@ app → api, web, infrastructure → domain
 
 ## Prerequisites
 
-- **JDK 21** for the Gradle daemon and app toolchain (do not run Gradle on JDK 25+)
-- Docker (Postgres locally / Testcontainers / Compose)
+- **JDK 21** for the Gradle daemon and app toolchain
+- **PostgreSQL** already installed and reachable (defaults: `localhost:5432`, db/user/password `boilerplate`)
+- `psql` for `db-init` / `db-check`
 
 ```bash
 export JAVA_HOME=$(/usr/libexec/java_home -v 21)   # macOS
 ```
 
-Integration tests use Testcontainers and are skipped automatically when Docker is unavailable. CI runners provide Docker, so those tests run on every pull request.
+Docker is **not** required for development. Compose/image tooling is optional.
 
 ## Quick Start
 
 ```bash
-make run-db          # start Postgres + bootRun (JDK 21 preferred)
-# or:
-./scripts/manage.sh run --with-db
+make db-init         # once — create role + database
+make db-check
+make run             # bootRun (local profile)
 ```
 
 - Web UI: http://localhost:8080/items
@@ -52,30 +53,22 @@ make run-db          # start Postgres + bootRun (JDK 21 preferred)
 Control plane: [`scripts/manage.sh`](scripts/manage.sh) · [`Makefile`](Makefile) · [`scripts/README.md`](scripts/README.md)
 
 ```bash
-make help            # list targets
-make test            # unit + integration tests
-make verify          # Spotless + test + bootJar (CI-like)
-make up              # full Compose stack
-make status          # JDK / Docker / health
+make help
+make test
+make verify          # Spotless + test + bootJar
+make status
 ```
 
-### Full stack with Compose
-
-```bash
-make up
-# or: docker compose up --build
-```
-
-More detail: [Getting Started](docs/01-getting-started/GETTING_STARTED.md) · [First-run checklist](docs/01-getting-started/FIRST_RUN_CHECKLIST.md)
+More detail: [Getting Started](docs/01-getting-started/GETTING_STARTED.md)
 
 ## Common Gradle Tasks
 
-Prefer Make/`manage.sh` above. Direct Gradle:
+Prefer Make/`manage.sh`. Direct Gradle:
 
 ```bash
-./gradlew test              # unit + Testcontainers integration tests
-./gradlew spotlessApply     # format Java / Gradle Kotlin DSL
-./gradlew :app:bootJar      # fat JAR under app/build/libs/
+./gradlew test
+./gradlew spotlessApply
+./gradlew :app:bootJar
 ```
 
 See [Gradle Tasks](docs/06-reference/GRADLE_TASKS.md).
@@ -95,31 +88,26 @@ See [Gradle Tasks](docs/06-reference/GRADLE_TASKS.md).
 | `SPRING_DATASOURCE_USERNAME` | — | Required in `prod` |
 | `SPRING_DATASOURCE_PASSWORD` | — | Required in `prod` |
 
-Full list: [Environment Variables](docs/06-reference/ENVIRONMENT_VARIABLES.md) · [Configuration](docs/05-operations/CONFIGURATION.md)
+Full list: [Environment Variables](docs/06-reference/ENVIRONMENT_VARIABLES.md)
 
 ## Adding a Feature
 
-1. **Domain** — model + port interface + service in `domain`
-2. **Infrastructure** — JPA entity/adapter (+ Flyway migration) in `infrastructure`
-3. **API** — controller + request/response DTOs in `api` (optional)
-4. **Web** — Thymeleaf controller + template in `web` (optional)
-5. Wire a `@Bean` for the domain service in `DomainConfig` if it is a new service
-
-Sample resource: `Item` at `/api/v1/items` and `/items`.
+1. **Domain** — model + port + service in `domain`
+2. **Infrastructure** — JPA adapter + Flyway migration
+3. **API** / **Web** — optional presentation
+4. Wire a `@Bean` in `DomainConfig` for new domain services
 
 Step-by-step: [Adding a Feature](docs/04-development/ADDING_A_FEATURE.md)
 
 ## Security
 
-`SecurityConfig` is intentionally permissive for local demos (API + item pages open). Harden `authorizeHttpRequests` and add JWT/OAuth2 resource-server support before production use.
+`SecurityConfig` is permissive for local demos. Harden before production.
 
 ## CI/CD
 
-- [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — Spotless, tests, `bootJar` on `main` and PRs
-- [`.github/workflows/docker.yml`](.github/workflows/docker.yml) — build/push image to `ghcr.io/<owner>/<repo>` on `main` and `v*` tags
-- [`.github/dependabot.yml`](.github/dependabot.yml) — weekly Gradle, Actions, and Docker updates
-
-Deploy notes: [Deployment](docs/05-operations/DEPLOYMENT.md)
+- [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — Spotless, tests against a CI Postgres **service**, `bootJar`
+- [`.github/workflows/docker.yml`](.github/workflows/docker.yml) — optional GHCR image publish
+- [`.github/dependabot.yml`](.github/dependabot.yml) — dependency updates
 
 ## License
 

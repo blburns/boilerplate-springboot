@@ -2,9 +2,11 @@
 
 ## Engine
 
-PostgreSQL **16** (Compose image `postgres:16-alpine`).
+PostgreSQL **14+** (16 recommended), expected as a host service.
 
 Migrations: Flyway under `infrastructure/src/main/resources/db/migration/`.
+
+Bootstrap role/database: [`scripts/sql/init_local_db.sql`](../../scripts/sql/init_local_db.sql) via `make db-init`.
 
 ## Applied migrations
 
@@ -27,8 +29,7 @@ Flyway also maintains `flyway_schema_history`.
 ## Inspect locally
 
 ```bash
-docker compose exec postgres \
-  psql -U boilerplate -d boilerplate -c '\d+ items'
+psql -h localhost -U boilerplate -d boilerplate -c '\d+ items'
 ```
 
 ## Adding tables
@@ -43,11 +44,6 @@ See [ADDING_A_FEATURE](../04-development/ADDING_A_FEATURE.md).
 ## Backup / restore (admin)
 
 ```bash
-# backup
-docker compose exec -T postgres \
-  pg_dump -U boilerplate boilerplate > backup.sql
-
-# restore (destructive overview — use carefully)
-docker compose exec -T postgres \
-  psql -U boilerplate boilerplate < backup.sql
+pg_dump -h localhost -U boilerplate boilerplate > backup.sql
+psql -h localhost -U boilerplate boilerplate < backup.sql
 ```
