@@ -2,6 +2,16 @@
 
 Multi-module Spring Boot **4.1** / Java **21** application base: REST API, Thymeleaf UI, JPA + Flyway + PostgreSQL, Actuator, OpenAPI, and GitHub Actions CI.
 
+**[Full Documentation →](docs/README.md)**
+
+## Who Is This For?
+
+| Role | Start here |
+|------|------------|
+| **End user** | [User Guide](docs/02-user-guide/README.md) — Items web UI and API |
+| **Administrator** | [Admin Guide](docs/05-operations/ADMIN_GUIDE.md) — config, deploy, monitor |
+| **Developer** | [Architecture](docs/03-architecture/ARCHITECTURE.md) — modules and feature recipe |
+
 ## Modules
 
 | Module | Responsibility |
@@ -23,7 +33,7 @@ app → api, web, infrastructure → domain
 
 Integration tests use Testcontainers and are skipped automatically when Docker is unavailable. CI runners provide Docker, so those tests run on every pull request.
 
-## Quick start
+## Quick Start
 
 ```bash
 # Start Postgres
@@ -43,13 +53,17 @@ docker compose up -d postgres
 docker compose up --build
 ```
 
-## Common Gradle tasks
+More detail: [Getting Started](docs/01-getting-started/GETTING_STARTED.md) · [First-run checklist](docs/01-getting-started/FIRST_RUN_CHECKLIST.md)
+
+## Common Gradle Tasks
 
 ```bash
 ./gradlew test              # unit + Testcontainers integration tests
 ./gradlew spotlessApply     # format Java / Gradle Kotlin DSL
 ./gradlew :app:bootJar      # fat JAR under app/build/libs/
 ```
+
+See [Gradle Tasks](docs/06-reference/GRADLE_TASKS.md).
 
 ## Configuration
 
@@ -66,9 +80,9 @@ docker compose up --build
 | `SPRING_DATASOURCE_USERNAME` | — | Required in `prod` |
 | `SPRING_DATASOURCE_PASSWORD` | — | Required in `prod` |
 
-Profiles live under `app/src/main/resources/application*.yml`.
+Full list: [Environment Variables](docs/06-reference/ENVIRONMENT_VARIABLES.md) · [Configuration](docs/05-operations/CONFIGURATION.md)
 
-## Adding a feature
+## Adding a Feature
 
 1. **Domain** — model + port interface + service in `domain`
 2. **Infrastructure** — JPA entity/adapter (+ Flyway migration) in `infrastructure`
@@ -77,6 +91,8 @@ Profiles live under `app/src/main/resources/application*.yml`.
 5. Wire a `@Bean` for the domain service in `DomainConfig` if it is a new service
 
 Sample resource: `Item` at `/api/v1/items` and `/items`.
+
+Step-by-step: [Adding a Feature](docs/04-development/ADDING_A_FEATURE.md)
 
 ## Security
 
@@ -87,6 +103,8 @@ Sample resource: `Item` at `/api/v1/items` and `/items`.
 - [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — Spotless, tests, `bootJar` on `main` and PRs
 - [`.github/workflows/docker.yml`](.github/workflows/docker.yml) — build/push image to `ghcr.io/<owner>/<repo>` on `main` and `v*` tags
 - [`.github/dependabot.yml`](.github/dependabot.yml) — weekly Gradle, Actions, and Docker updates
+
+Deploy notes: [Deployment](docs/05-operations/DEPLOYMENT.md)
 
 ## License
 
