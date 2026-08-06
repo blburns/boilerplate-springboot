@@ -2,30 +2,33 @@ package com.boilerplate.springboot;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.sql.DriverManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.ActiveProfiles;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
 @ActiveProfiles("test")
-@Testcontainers(disabledWithoutDocker = true)
 class ApplicationContextTest {
 
   @BeforeAll
-  static void requireDocker() {
-    assumeTrue(
-        DockerClientFactory.instance().isDockerAvailable(),
-        "Docker is required for Testcontainers Postgres tests");
+  static void requirePostgres() {
+    String url =
+        "jdbc:postgresql://"
+            + System.getenv().getOrDefault("DB_HOST", "localhost")
+            + ":"
+            + System.getenv().getOrDefault("DB_PORT", "5432")
+            + "/"
+            + System.getenv().getOrDefault("DB_NAME", "boilerplate");
+    String user = System.getenv().getOrDefault("DB_USER", "boilerplate");
+    String password = System.getenv().getOrDefault("DB_PASSWORD", "boilerplate");
+    try {
+      DriverManager.getConnection(url, user, password).close();
+    } catch (Exception ex) {
+      assumeTrue(false, "Postgres required for context test. Run: ./scripts/manage.sh db-init");
+    }
   }
-
-  @Container @ServiceConnection
-  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
   @Test
   void contextLoads() {}

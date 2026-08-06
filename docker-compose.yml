@@ -1,3 +1,9 @@
+# OPTIONAL: Docker Compose stack for teams that prefer containers.
+# Day-to-day development expects a host-installed Postgres (see scripts/manage.sh db-init).
+#
+#   docker compose up --build
+#   # or: make compose-up
+
 services:
   postgres:
     image: postgres:16-alpine

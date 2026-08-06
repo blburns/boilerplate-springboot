@@ -2,34 +2,34 @@
 
 | Script / entry | Purpose |
 |----------------|---------|
-| [`manage.sh`](manage.sh) | Primary control plane (run, test, build, db, compose, …) |
+| [`manage.sh`](manage.sh) | Primary control plane (run, test, build, db-check, …) |
 | [`run-local.sh`](run-local.sh) | Alias for `manage.sh run` |
+| [`sql/init_local_db.sql`](sql/init_local_db.sql) | Create local role/database |
 | Root [`Makefile`](../Makefile) | `make <target>` delegates to `manage.sh` |
+
+Postgres is expected to be **already installed** on the host (or otherwise reachable). Docker Compose is optional only.
 
 ## Quick start
 
 ```bash
-make db-up          # Postgres
-make run            # Spring Boot local profile
-# or in one step:
-make run-db
+make db-init         # once: create role + database (needs psql superuser)
+make db-check        # verify connection
+make run             # bootRun against local Postgres
 
-make help           # full command list
+make help
 ./scripts/manage.sh help
 ```
 
 ## Common targets
 
-| Make | Equivalent |
-|------|------------|
-| `make run` | `./scripts/manage.sh run` |
-| `make run-db` | `./scripts/manage.sh run --with-db` |
-| `make test` | `./scripts/manage.sh test` |
-| `make verify` | spotlessCheck + test + bootJar |
+| Make | Purpose |
+|------|---------|
+| `make run` | bootRun (`local` profile) |
+| `make db-init` / `db-check` | Provision / verify Postgres |
+| `make test` | Unit + integration tests |
+| `make verify` | Spotless + test + bootJar |
 | `make format` | Spotless apply |
 | `make jar` | Fat JAR |
-| `make up` / `make down` | Full Compose stack |
-| `make status` | JDK / Docker / health |
-| `make db-reset` | Wipe Postgres volume and recreate |
+| `make status` | JDK / Postgres / health |
 
-Pass extra args to `run` via `make run ARGS='--with-db'` when needed.
+Optional Compose (appendix only): `make compose-up` / `compose-down`.

@@ -1,9 +1,11 @@
 # Makefile — thin wrappers around ./scripts/manage.sh
 # Prefer: make help
+# Postgres must already be installed/running (see make db-init).
 
 .PHONY: help run jar build clean test format fmt check lint verify \
-	db-up db-down db-reset up down down-v docker-build \
-	status stop-daemon toolchains logs ps
+	db-check db-init \
+	compose-up compose-down compose-down-v docker-build \
+	status stop-daemon toolchains
 
 MANAGE := ./scripts/manage.sh
 
@@ -12,9 +14,6 @@ help:
 
 run:
 	@$(MANAGE) run $(ARGS)
-
-run-db:
-	@$(MANAGE) run --with-db
 
 jar package:
 	@$(MANAGE) jar
@@ -37,26 +36,11 @@ check lint:
 verify:
 	@$(MANAGE) verify
 
-db-up:
-	@$(MANAGE) db-up
+db-check:
+	@$(MANAGE) db-check
 
-db-down:
-	@$(MANAGE) db-down
-
-db-reset:
-	@$(MANAGE) db-reset
-
-up:
-	@$(MANAGE) up
-
-down:
-	@$(MANAGE) down
-
-down-v:
-	@$(MANAGE) down-v
-
-docker-build:
-	@$(MANAGE) docker-build
+db-init:
+	@$(MANAGE) db-init
 
 status:
 	@$(MANAGE) status
@@ -67,8 +51,15 @@ stop-daemon:
 toolchains:
 	@$(MANAGE) toolchains
 
-logs:
-	@$(MANAGE) logs $(SERVICE)
+# Optional Docker appendix (not part of the default workflow)
+compose-up:
+	@$(MANAGE) compose-up
 
-ps:
-	@$(MANAGE) ps
+compose-down:
+	@$(MANAGE) compose-down
+
+compose-down-v:
+	@$(MANAGE) compose-down-v
+
+docker-build:
+	@$(MANAGE) docker-build

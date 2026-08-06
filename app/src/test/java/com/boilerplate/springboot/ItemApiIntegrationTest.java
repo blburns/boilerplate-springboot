@@ -9,36 +9,48 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.sql.DriverManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.testcontainers.DockerClientFactory;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Testcontainers(disabledWithoutDocker = true)
 class ItemApiIntegrationTest {
 
   @BeforeAll
-  static void requireDocker() {
-    assumeTrue(
-        DockerClientFactory.instance().isDockerAvailable(),
-        "Docker is required for Testcontainers Postgres tests");
+  static void requirePostgres() {
+    String url =
+        System.getenv()
+            .getOrDefault(
+                "SPRING_DATASOURCE_URL",
+                "jdbc:postgresql://"
+                    + System.getenv().getOrDefault("DB_HOST", "localhost")
+                    + ":"
+                    + System.getenv().getOrDefault("DB_PORT", "5432")
+                    + "/"
+                    + System.getenv().getOrDefault("DB_NAME", "boilerplate"));
+    String user = System.getenv().getOrDefault("DB_USER", "boilerplate");
+    String password = System.getenv().getOrDefault("DB_PASSWORD", "boilerplate");
+    try {
+      DriverManager.getConnection(url, user, password).close();
+    } catch (Exception ex) {
+      assumeTrue(
+          false,
+          "Postgres required for integration tests ("
+              + user
+              + "@"
+              + url
+              + "). Run: ./scripts/manage.sh db-init");
+    }
   }
-
-  @Container @ServiceConnection
-  static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
 
   @Autowired private MockMvc mockMvc;
 

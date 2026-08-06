@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # manage.sh — project control plane for boilerplate-springboot
+# Assumes PostgreSQL is already installed and reachable (default: localhost:5432).
+# Docker Compose remains optional appendix only — not required for day-to-day use.
+#
 # Usage: ./scripts/manage.sh <command> [args...]
 #        make <target>
 set -euo pipefail
@@ -9,6 +12,12 @@ cd "$ROOT"
 
 PROFILE="${SPRING_PROFILES_ACTIVE:-local}"
 GRADLEW=(./gradlew --no-daemon)
+
+DB_HOST="${DB_HOST:-localhost}"
+DB_PORT="${DB_PORT:-5432}"
+DB_NAME="${DB_NAME:-boilerplate}"
+DB_USER="${DB_USER:-boilerplate}"
+DB_PASSWORD="${DB_PASSWORD:-boilerplate}"
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -54,9 +63,21 @@ gradle() {
   "${GRADLEW[@]}" "$@"
 }
 
-docker_compose() {
-  require_cmd docker
-  docker compose "$@"
+psql_admin() {
+  # Prefer connecting as local peer/superuser to create roles/dbs
+  if command -v psql >/dev/null 2>&1; then
+    if [[ -n "${PGUSER:-}" ]]; then
+      psql "$@"
+    elif psql -d postgres -c 'SELECT 1' >/dev/null 2>&1; then
+      psql -d postgres "$@"
+    elif psql -U postgres -d postgres -c 'SELECT 1' >/dev/null 2>&1; then
+      psql -U postgres -d postgres "$@"
+    else
+      die "cannot connect to Postgres as a superuser. Set PGUSER or run as a role that can CREATE ROLE/DATABASE."
+    fi
+  else
+    die "psql not found. Install PostgreSQL client tools."
+  fi
 }
 
 usage() {
@@ -68,40 +89,41 @@ Usage:
   make <command>
 
 Lifecycle
-  run [--with-db]     Start app (bootRun, profile=local). Optional: start Postgres first
+  run                 Start app (bootRun, profile=local) against existing Postgres
   jar                 Build fat JAR (:app:bootJar)
-  build               Format check skipped; compile + bootJar
+  build               Compile + bootJar
   clean               ./gradlew clean
 
 Quality
-  test                Run all tests (Testcontainers needs Docker)
+  test                Run all tests (integration tests need reachable Postgres)
   format | fmt        Spotless apply
   check | lint        Spotless check
-  verify              format check + test + bootJar (CI-like)
+  verify              spotlessCheck + test + bootJar (CI-like)
 
-Data / Docker
-  db-up               Start Postgres via Compose
-  db-down             Stop Postgres
-  db-reset            Stop Postgres and delete volume (destructive)
-  up                  docker compose up --build (app + Postgres)
-  down                docker compose down
-  down-v              docker compose down -v (destructive)
-  docker-build        Build app image only
+Postgres (local / already installed)
+  db-check            Verify DB_HOST/DB_PORT/DB_NAME credentials
+  db-init             Create role + database (idempotent; needs superuser via psql)
 
 Ops
-  status              Show Java, Docker, Compose, /actuator/health
+  status              Show Java, Postgres reachability, /actuator/health
   stop-daemon         ./gradlew --stop
   toolchains          List detected JDKs
-  logs [service]      Compose logs (default: app)
-  ps                  Compose process status
+
+Optional Docker appendix (not required)
+  compose-up          docker compose up --build
+  compose-down        docker compose down
+  compose-down-v      docker compose down -v (destructive)
+  docker-build        Build app image only
 
 Help
   help                Show this message
 
-Environment
-  SPRING_PROFILES_ACTIVE   default: local (for run)
-  JAVA_HOME                prefer JDK 21
-  SERVER_PORT              default 8080 (health checks)
+Environment (defaults)
+  SPRING_PROFILES_ACTIVE=local
+  DB_HOST=localhost  DB_PORT=5432  DB_NAME=boilerplate
+  DB_USER=boilerplate  DB_PASSWORD=boilerplate
+  JAVA_HOME           prefer JDK 21
+  SERVER_PORT         default 8080
 EOF
 }
 
@@ -110,28 +132,26 @@ EOF
 # ---------------------------------------------------------------------------
 
 cmd_run() {
-  local with_db=0
   for arg in "$@"; do
     case "$arg" in
-      --with-db) with_db=1 ;;
       -h|--help)
-        echo "Usage: manage.sh run [--with-db]"
+        echo "Usage: manage.sh run"
+        echo "Requires Postgres already running (see db-check / db-init)."
         return 0
+        ;;
+      --with-db)
+        die "--with-db was removed. Postgres must already be installed. Use: manage.sh db-init && manage.sh db-check && manage.sh run"
         ;;
       *) die "unknown option for run: $arg" ;;
     esac
   done
 
-  if [[ "$with_db" -eq 1 ]]; then
-    cmd_db_up
-  fi
-
   ensure_java
+  cmd_db_check
   info "JAVA_HOME=${JAVA_HOME:-"(from PATH)"}"
   info "profile=${PROFILE}"
+  info "datasource=${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
   info "starting :app:bootRun — http://localhost:${SERVER_PORT:-8080}/items"
-  # Allow Gradle daemon for interactive run (faster restarts)
-  ensure_java
   ./gradlew :app:bootRun --args="--spring.profiles.active=${PROFILE}"
 }
 
@@ -152,7 +172,8 @@ cmd_clean() {
 }
 
 cmd_test() {
-  info "running tests"
+  info "running tests (integration tests use DB_* against Postgres)"
+  export DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD
   gradle test
 }
 
@@ -168,53 +189,39 @@ cmd_check() {
 
 cmd_verify() {
   info "CI-like verify: spotlessCheck + test + bootJar"
+  export DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD
   gradle spotlessCheck test :app:bootJar
 }
 
-cmd_db_up() {
-  info "starting Postgres"
-  docker_compose up -d postgres
-  info "waiting for healthy Postgres…"
-  local i=0
-  until docker_compose exec -T postgres pg_isready -U boilerplate -d boilerplate >/dev/null 2>&1; do
-    i=$((i + 1))
-    if [[ $i -gt 30 ]]; then
-      die "Postgres did not become ready"
-    fi
-    sleep 1
-  done
-  info "Postgres is ready on localhost:5432"
+cmd_db_check() {
+  require_cmd psql
+  info "checking Postgres ${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+  if PGPASSWORD="$DB_PASSWORD" psql \
+    -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
+    -c 'SELECT 1' >/dev/null 2>&1; then
+    info "Postgres OK"
+  else
+    die "cannot connect to ${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}. Create it with: ./scripts/manage.sh db-init"
+  fi
 }
 
-cmd_db_down() {
-  info "stopping Postgres"
-  docker_compose stop postgres
-}
+cmd_db_init() {
+  require_cmd psql
+  info "ensuring role/database ${DB_NAME} (user ${DB_USER})"
+  local sql_file="$ROOT/scripts/sql/init_local_db.sql"
+  [[ -f "$sql_file" ]] || die "missing $sql_file"
 
-cmd_db_reset() {
-  info "resetting Postgres volume (destructive)"
-  docker_compose down -v --remove-orphans
-  cmd_db_up
-}
-
-cmd_up() {
-  info "compose up --build"
-  docker_compose up --build "$@"
-}
-
-cmd_down() {
-  docker_compose down "$@"
-}
-
-cmd_down_v() {
-  info "compose down -v (destructive)"
-  docker_compose down -v
-}
-
-cmd_docker_build() {
-  require_cmd docker
-  info "building docker image"
-  docker build -f docker/Dockerfile -t boilerplate-springboot:local .
+  # Run as admin against the maintenance DB; script is idempotent.
+  if [[ -n "${PGUSER:-}" ]]; then
+    psql -v ON_ERROR_STOP=1 -f "$sql_file"
+  elif psql -d postgres -v ON_ERROR_STOP=1 -f "$sql_file" >/dev/null 2>&1; then
+    true
+  elif psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f "$sql_file"; then
+    true
+  else
+    die "db-init failed. Run as a Postgres superuser, e.g. PGUSER=postgres ./scripts/manage.sh db-init"
+  fi
+  cmd_db_check
 }
 
 cmd_status() {
@@ -233,13 +240,13 @@ cmd_status() {
     ./gradlew --version 2>/dev/null | head -5 || true
   fi
   echo
-  echo "--- Docker ---"
-  if command -v docker >/dev/null 2>&1; then
-    docker version --format 'Client: {{.Client.Version}}' 2>/dev/null || docker --version
-    echo
-    docker_compose ps 2>/dev/null || echo "(compose project not running)"
+  echo "--- Postgres ---"
+  echo "target: ${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+  if command -v psql >/dev/null 2>&1 \
+    && PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c 'SELECT 1' >/dev/null 2>&1; then
+    echo "status: reachable"
   else
-    echo "docker not installed"
+    echo "status: unreachable (run: manage.sh db-init && manage.sh db-check)"
   fi
   echo
   echo "--- Health ---"
@@ -262,13 +269,27 @@ cmd_toolchains() {
   gradle -q javaToolchains
 }
 
-cmd_logs() {
-  local service="${1:-app}"
-  docker_compose logs -f "$service"
+cmd_compose_up() {
+  require_cmd docker
+  info "optional: docker compose up --build"
+  docker compose up --build "$@"
 }
 
-cmd_ps() {
-  docker_compose ps
+cmd_compose_down() {
+  require_cmd docker
+  docker compose down "$@"
+}
+
+cmd_compose_down_v() {
+  require_cmd docker
+  info "optional: docker compose down -v (destructive)"
+  docker compose down -v
+}
+
+cmd_docker_build() {
+  require_cmd docker
+  info "optional: building docker image"
+  docker build -f docker/Dockerfile -t boilerplate-springboot:local .
 }
 
 # ---------------------------------------------------------------------------
@@ -289,18 +310,21 @@ main() {
     format|fmt)     cmd_format "$@" ;;
     check|lint)     cmd_check "$@" ;;
     verify)         cmd_verify "$@" ;;
-    db-up)          cmd_db_up "$@" ;;
-    db-down)        cmd_db_down "$@" ;;
-    db-reset)       cmd_db_reset "$@" ;;
-    up)             cmd_up "$@" ;;
-    down)           cmd_down "$@" ;;
-    down-v)         cmd_down_v "$@" ;;
+    db-check)       cmd_db_check "$@" ;;
+    db-init)        cmd_db_init "$@" ;;
+    # Removed Docker-centric aliases — point people at local Postgres
+    db-up|db-down|db-reset|run-db)
+      die "'$cmd' removed. Use local Postgres: db-init / db-check / run. Optional Compose: compose-up / compose-down."
+      ;;
+    up)             cmd_compose_up "$@" ;;
+    down)           cmd_compose_down "$@" ;;
+    down-v|compose-down-v) cmd_compose_down_v "$@" ;;
+    compose-up)     cmd_compose_up "$@" ;;
+    compose-down)   cmd_compose_down "$@" ;;
     docker-build)   cmd_docker_build "$@" ;;
     status)         cmd_status "$@" ;;
     stop-daemon)    cmd_stop_daemon "$@" ;;
     toolchains)     cmd_toolchains "$@" ;;
-    logs)           cmd_logs "$@" ;;
-    ps)             cmd_ps "$@" ;;
     *)
       echo "unknown command: $cmd" >&2
       echo >&2
