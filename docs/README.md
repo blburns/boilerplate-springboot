@@ -62,6 +62,7 @@ Full map: [DOCUMENTATION_MAP.md](DOCUMENTATION_MAP.md)
 | [API_REFERENCE](04-development/API_REFERENCE.md) | Items REST contract and errors |
 | [TESTING](04-development/TESTING.md) | Unit + host-Postgres integration tests |
 | [CODING_CONVENTIONS](04-development/CODING_CONVENTIONS.md) | Packages, formatting, security notes |
+| [RBAC_AND_ADMIN](04-development/RBAC_AND_ADMIN.md) | Admin shell, form login, permissions |
 
 ---
 
