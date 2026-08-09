@@ -6,15 +6,15 @@
     <p class="brand">Boilerplate</p>
     <p class="brand-sub">Admin</p>
   </div>
-  <nav class="nav">
+  <nav class="nav" th:with="uri=${currentUri}">
     <a th:href="@{/admin}"
-       th:classappend="${#httpServletRequest.requestURI.equals('/admin') or #httpServletRequest.requestURI.equals('/admin/')} ? ' active'">Dashboard</a>
+       th:classappend="${uri == '/admin' or uri == '/admin/'} ? ' active'">Dashboard</a>
     <a sec:authorize="hasAuthority('items:read')" th:href="@{/items}"
-       th:classappend="${#strings.startsWith(#httpServletRequest.requestURI,'/items')} ? ' active'">Items</a>
+       th:classappend="${uri != null and #strings.startsWith(uri, '/items')} ? ' active'">Items</a>
     <a sec:authorize="hasAuthority('users:read')" th:href="@{/admin/users}"
-       th:classappend="${#strings.startsWith(#httpServletRequest.requestURI,'/admin/users')} ? ' active'">Users</a>
+       th:classappend="${uri != null and #strings.startsWith(uri, '/admin/users')} ? ' active'">Users</a>
     <a sec:authorize="hasAuthority('roles:read')" th:href="@{/admin/roles}"
-       th:classappend="${#strings.startsWith(#httpServletRequest.requestURI,'/admin/roles')} ? ' active'">Roles</a>
+       th:classappend="${uri != null and #strings.startsWith(uri, '/admin/roles')} ? ' active'">Roles</a>
   </nav>
 </aside>
 

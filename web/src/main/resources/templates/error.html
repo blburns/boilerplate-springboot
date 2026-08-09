@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title th:text="'Error ' + ${status} + ' · Boilerplate'">Error · Boilerplate</title>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body class="login-body">
+<main class="login-card">
+  <p class="brand">Boilerplate</p>
+  <h1 th:text="${status}">500</h1>
+  <p class="lede" th:text="${error} ?: 'Unexpected error'">Unexpected error</p>
+  <p class="muted" th:if="${message}" th:text="${message}"></p>
+  <p><a th:href="@{/admin}">Back to admin</a> · <a th:href="@{/login}">Sign in</a></p>
+</main>
+</body>
+</html>
