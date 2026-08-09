@@ -10,7 +10,7 @@ Multi-module Spring Boot **4.1** / Java **21** application base: REST API, Thyme
 |------|------------|
 | **End user** | [User Guide](docs/02-user-guide/README.md) — Items web UI and API |
 | **Administrator** | [Admin Guide](docs/05-operations/ADMIN_GUIDE.md) — config, deploy, monitor |
-| **Developer** | [Architecture](docs/03-architecture/ARCHITECTURE.md) — modules and feature recipe |
+| **Developer** | [Architecture](docs/03-architecture/ARCHITECTURE.md) · [RBAC & Admin](docs/04-development/RBAC_AND_ADMIN.md) |
 
 ## Modules
 
@@ -46,7 +46,11 @@ make db-check
 make run             # bootRun (local profile)
 ```
 
-- Web UI: http://localhost:8080/items
+Sign in at http://localhost:8080/login  
+Default admin: `admin@example.com` / `admin123` (change for production)
+
+- Admin shell: http://localhost:8080/admin
+- Items: http://localhost:8080/items
 - Swagger UI: http://localhost:8080/swagger-ui.html
 - Health: http://localhost:8080/actuator/health
 
@@ -101,7 +105,7 @@ Step-by-step: [Adding a Feature](docs/04-development/ADDING_A_FEATURE.md)
 
 ## Security
 
-`SecurityConfig` is permissive for local demos. Harden before production.
+Form login + session for the Thymeleaf admin shell. Authorities are permission codes (`items:read`, …) plus `ROLE_{name}`. Default seed user: `admin@example.com` / `admin123`. See [RBAC & Admin](docs/04-development/RBAC_AND_ADMIN.md).
 
 ## CI/CD
 

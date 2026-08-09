@@ -3,7 +3,8 @@
 ## Open the Items page
 
 1. Start the app ([Getting Started](../01-getting-started/GETTING_STARTED.md)).
-2. Visit **http://localhost:8080/items** (or `/`, which redirects there).
+2. Sign in at **http://localhost:8080/login** (default local admin: `admin@example.com` / `admin123`).
+3. Open **Items** from the sidebar, or visit **http://localhost:8080/items**.
 
 You should see:
 

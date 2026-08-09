@@ -7,6 +7,7 @@ Guides for engineers extending this boilerplate.
 | [ADDING_A_FEATURE](ADDING_A_FEATURE.md) | Vertical-slice recipe across modules |
 | [API_REFERENCE](API_REFERENCE.md) | Items REST contract |
 | [TESTING](TESTING.md) | Unit + Postgres-backed integration tests |
+| [RBAC_AND_ADMIN](RBAC_AND_ADMIN.md) | Admin shell and permission model |
 | [CODING_CONVENTIONS](CODING_CONVENTIONS.md) | Style, packages, security hooks |
 
 ## Local loop

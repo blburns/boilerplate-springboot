@@ -29,7 +29,7 @@ Both UI and API read/write the same Postgres `items` table. Changes in one surfa
 
 ## Security note for users
 
-The default configuration is **open for local demos**: item pages and the API do not require a login. Do not expose a default deployment to the public internet without an administrator enabling real authentication.
+You must **sign in** at `/login` to use the admin shell and Items UI. Access to Users/Roles depends on your assigned permissions. Ask an administrator if you cannot open a page.
 
 ## Typical use cases
 
