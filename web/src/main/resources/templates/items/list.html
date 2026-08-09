@@ -1,71 +1,66 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Items — Spring Boot Boilerplate</title>
-  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <title>Items · Boilerplate</title>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
 </head>
 <body>
-<main class="page">
-  <header class="header">
-    <p class="brand">Boilerplate</p>
-    <h1>Items</h1>
-    <p class="lede">Sample CRUD surface for the multi-module Spring Boot base.</p>
-  </header>
+<div class="app-shell">
+  <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+  <div class="main">
+    <header th:replace="~{layout/fragments :: topbar}"></header>
+    <main class="content">
+      <p class="flash ok" th:if="${message}" th:text="${message}"></p>
+      <p class="flash err" th:if="${error}" th:text="${error}"></p>
 
-  <p class="flash ok" th:if="${message}" th:text="${message}"></p>
-  <p class="flash err" th:if="${error}" th:text="${error}"></p>
+      <section class="panel" sec:authorize="hasAuthority('items:write')">
+        <h2>Create item</h2>
+        <form th:action="@{/items}" th:object="${itemForm}" method="post" class="form">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <label>
+            Name
+            <input type="text" th:field="*{name}" maxlength="200" required/>
+            <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+          </label>
+          <label>
+            Description
+            <textarea th:field="*{description}" maxlength="2000" rows="3"></textarea>
+          </label>
+          <button type="submit">Add item</button>
+        </form>
+      </section>
 
-  <section class="panel">
-    <h2>Create item</h2>
-    <form th:action="@{/items}" th:object="${itemForm}" method="post" class="form">
-      <label>
-        Name
-        <input type="text" th:field="*{name}" maxlength="200" required/>
-        <span class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
-      </label>
-      <label>
-        Description
-        <textarea th:field="*{description}" maxlength="2000" rows="3"></textarea>
-        <span class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
-      </label>
-      <button type="submit">Add item</button>
-    </form>
-  </section>
-
-  <section class="panel">
-    <h2>All items</h2>
-    <p th:if="${#lists.isEmpty(items)}" class="empty">No items yet.</p>
-    <table th:if="${!#lists.isEmpty(items)}">
-      <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Description</th>
-        <th></th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="item : ${items}">
-        <td th:text="${item.id}">1</td>
-        <td th:text="${item.name}">Name</td>
-        <td th:text="${item.description}">Desc</td>
-        <td>
-          <form th:action="@{/items/{id}/delete(id=${item.id})}" method="post">
-            <button type="submit" class="danger">Delete</button>
-          </form>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <footer class="footer">
-    <a href="/swagger-ui.html">API docs</a>
-    ·
-    <a href="/actuator/health">Health</a>
-  </footer>
-</main>
+      <section class="panel">
+        <h2>All items</h2>
+        <p th:if="${#lists.isEmpty(items)}" class="empty">No items yet.</p>
+        <table th:if="${!#lists.isEmpty(items)}">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="item : ${items}">
+            <td th:text="${item.id}">1</td>
+            <td th:text="${item.name}">Name</td>
+            <td th:text="${item.description}">Desc</td>
+            <td>
+              <form sec:authorize="hasAuthority('items:write')" th:action="@{/items/{id}/delete(id=${item.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</div>
 </body>
 </html>

@@ -27,6 +27,7 @@ public class ItemPageController {
 
   @GetMapping
   public String list(Model model) {
+    model.addAttribute("pageTitle", "Items");
     model.addAttribute("items", itemService.findAll());
     model.addAttribute("itemForm", new ItemForm());
     return "items/list";

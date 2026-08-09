@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title th:text="${pageTitle} + ' · Boilerplate'">Dashboard · Boilerplate</title>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="app-shell">
+  <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+  <div class="main">
+    <header th:replace="~{layout/fragments :: topbar}"></header>
+    <main class="content">
+      <section class="panel">
+        <h2>Welcome</h2>
+        <p class="lede">
+          Signed in as <strong sec:authentication="name">user</strong>.
+          Use the sidebar to manage Items, Users, and Roles according to your permissions.
+        </p>
+      </section>
+      <section class="panel">
+        <h2>Quick links</h2>
+        <ul class="link-list">
+          <li sec:authorize="hasAuthority('items:read')"><a th:href="@{/items}">Items</a></li>
+          <li sec:authorize="hasAuthority('users:read')"><a th:href="@{/admin/users}">Users</a></li>
+          <li sec:authorize="hasAuthority('roles:read')"><a th:href="@{/admin/roles}">Roles</a></li>
+          <li><a href="/swagger-ui.html">API docs</a></li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title th:text="${pageTitle} + ' · Boilerplate'">Roles · Boilerplate</title>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="app-shell">
+  <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+  <div class="main">
+    <header th:replace="~{layout/fragments :: topbar}"></header>
+    <main class="content">
+      <section class="panel" th:each="role : ${roles}">
+        <h2 th:text="${role.name}">ADMIN</h2>
+        <p class="lede" th:text="${role.description}">Description</p>
+        <p class="muted">Permissions</p>
+        <ul class="chip-list">
+          <li th:each="code : ${role.permissionCodes}" th:text="${code}">items:read</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

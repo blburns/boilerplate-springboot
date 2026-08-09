@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sign in · Boilerplate</title>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body class="login-body">
+<main class="login-card">
+  <p class="brand">Boilerplate</p>
+  <h1>Sign in</h1>
+  <p class="lede">Admin shell with role-based access control.</p>
+
+  <p class="flash err" th:if="${param.error}">Invalid email or password.</p>
+  <p class="flash ok" th:if="${param.logout}">You have been signed out.</p>
+
+  <form th:action="@{/login}" method="post" class="form">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <label>
+      Email
+      <input type="email" name="username" autocomplete="username" required autofocus/>
+    </label>
+    <label>
+      Password
+      <input type="password" name="password" autocomplete="current-password" required/>
+    </label>
+    <button type="submit">Sign in</button>
+  </form>
+  <p class="hint">Default local admin: <code>admin@example.com</code> / <code>admin123</code></p>
+</main>
+</body>
+</html>

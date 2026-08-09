@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title th:text="${pageTitle} + ' · Boilerplate'">Users · Boilerplate</title>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+<div class="app-shell">
+  <aside th:replace="~{layout/fragments :: sidebar}"></aside>
+  <div class="main">
+    <header th:replace="~{layout/fragments :: topbar}"></header>
+    <main class="content">
+      <p class="flash ok" th:if="${message}" th:text="${message}"></p>
+      <div class="toolbar">
+        <a sec:authorize="hasAuthority('users:write')" class="button" th:href="@{/admin/users/new}">New user</a>
+      </div>
+      <section class="panel">
+        <table>
+          <thead>
+          <tr>
+            <th>Email</th>
+            <th>Name</th>
+            <th>Roles</th>
+            <th>Enabled</th>
+            <th></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="user : ${users}">
+            <td th:text="${user.email}">email</td>
+            <td th:text="${user.displayName}">name</td>
+            <td>
+              <span th:each="role, iter : ${user.roleNames}"
+                    th:text="${role + (!iter.last ? ', ' : '')}">ADMIN</span>
+            </td>
+            <td th:text="${user.enabled} ? 'Yes' : 'No'">Yes</td>
+            <td>
+              <a sec:authorize="hasAuthority('users:write')" th:href="@{/admin/users/{id}/edit(id=${user.id})}">Edit</a>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>
