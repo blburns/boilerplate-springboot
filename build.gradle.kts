@@ -29,8 +29,8 @@ subprojects {
 
     if (name != "domain") {
         dependencies {
-            "implementation"(platform("org.springframework.boot:spring-boot-dependencies:4.1.0"))
-            "testImplementation"(platform("org.springframework.boot:spring-boot-dependencies:4.1.0"))
+            "implementation"(platform("org.springframework.boot:spring-boot-dependencies:4.1.2"))
+            "testImplementation"(platform("org.springframework.boot:spring-boot-dependencies:4.1.2"))
         }
     }
 
